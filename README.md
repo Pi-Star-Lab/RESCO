@@ -41,6 +41,6 @@ This project was used in [Reinforcement Learning Benchmarks for Traffic Signal C
 
 
 # EPyMARL
-RESCO has been updated to be compatible with the [EPyMARL](https://datasets-benchmarks-proceedings.neurips.cc/paper/2021/hash/a8baa56554f96369ab93e4f3bb068c22-Abstract-round1.html) benchmark for cooperative RL algorithms. Some modifications within EPyMARL are required currently, available [here](https://github.com/Pi-Star-Lab/epymarl_resco). Clone the modified repository and execute EPyMARL algorithms against the RESCO benchmark using the argument:
+RESCO has been updated to be compatible with the [EPyMARL](https://datasets-benchmarks-proceedings.neurips.cc/paper/2021/hash/a8baa56554f96369ab93e4f3bb068c22-Abstract-round1.html) benchmark for cooperative RL algorithms. Some modifications within EPyMARL are required currently, available [here](https://github.com/Pi-Star-Lab/epymarl_resco). Clone the modified repository and execute EPyMARL algorithms against the RESCO benchmark using EPyMARL's main.py:
 
-```env_args.key=resco_benchmark:cologne3-qmix-v1'```
+```main.py --config=qmix --env-config=gymma with env_args.time_limit=1 env_args.key=resco_benchmark:cologne3-qmix-v1```
