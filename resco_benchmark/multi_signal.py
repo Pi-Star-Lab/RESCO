@@ -41,29 +41,18 @@ class MultiSignal(gym.Env):
             traci.start(sumo_cmd, label = self.connection_name)
             self.sumo = traci.getConnection(self.connection_name)
         self.signal_ids = self.sumo.trafficlight.getIDList()
-        print('lights', len(self.signal_ids), self.signal_ids)
-        valid_phases = dict()
-        for i in range(0, 500):    # TODO grab info. directly from tllogic python interface
-            for lightID in self.signal_ids:
-                cur_phase = self.sumo.trafficlight.getRedYellowGreenState(lightID)
-                if not lightID in valid_phases:
-                    valid_phases[lightID] = []
-                has_phase = False
-                for phase in valid_phases[lightID]:
-                    if phase == cur_phase:
-                        has_phase = True
-                if not has_phase:
-                    valid_phases[lightID].append(cur_phase)
-            self.step_sim()
-        for ts in valid_phases:
-            green_phases = []
-            for phase in valid_phases[ts]:    # Convert to SUMO phase type
-                if 'y' not in phase:
-                    if phase.count('r') + phase.count('s') != len(phase):
-                        green_phases.append(self.sumo.trafficlight.Phase(step_length, phase))
-            valid_phases[ts] = green_phases
+        print("lights", len(self.signal_ids), self.signal_ids)
 
-        self.phases = valid_phases
+        # this should work on all SUMO versions
+        self.phases = {
+            lightID: [
+                p
+                for p in self.sumo.trafficlight.getAllProgramLogics(lightID)[0].getPhases()
+                if "y" not in p.state and "g" in p.state.lower()
+            ]
+            for lightID in self.signal_ids
+        }
+
 
         self.signals = dict()
 
