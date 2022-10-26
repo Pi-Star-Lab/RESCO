@@ -6,8 +6,8 @@ from resco_benchmark.config.signal_config import signal_configs
 class MAXPRESSURE(SharedAgent):
     def __init__(self, config, obs_act, map_name, thread_number):
         super().__init__(config, obs_act, map_name, thread_number)
-        self.valid_acts = signal_configs[map_name]['valid_acts']
-        self.agent = MaxAgent(signal_configs[map_name]['phase_pairs'])
+        self.valid_acts = signal_configs[map_name]["valid_acts"]
+        self.agent = MaxAgent(signal_configs[map_name]["phase_pairs"])
 
 
 class MaxAgent(WaveAgent):
