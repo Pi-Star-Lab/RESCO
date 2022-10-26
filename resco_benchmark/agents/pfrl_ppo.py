@@ -46,29 +46,32 @@ class PFRLPPOAgent(Agent):
             lecun_init(nn.Conv2d(obs_space[0], 64, kernel_size=(2, 2))),
             nn.ReLU(),
             nn.Flatten(),
-            lecun_init(nn.Linear(h*w*64, 64)),
+            lecun_init(nn.Linear(h * w * 64, 64)),
             nn.ReLU(),
             lecun_init(nn.Linear(64, 64)),
             nn.ReLU(),
             Branched(
                 nn.Sequential(
-                    lecun_init(nn.Linear(64, act_space), 1e-2),
-                    SoftmaxCategoricalHead()
+                    lecun_init(nn.Linear(64, act_space), 1e-2), SoftmaxCategoricalHead()
                 ),
-                lecun_init(nn.Linear(64, 1))
-            )
+                lecun_init(nn.Linear(64, 1)),
+            ),
         )
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=2.5e-4, eps=1e-5)
-        self.agent = PPO(self.model, self.optimizer, gpu=self.device.index,
-                         phi=lambda x: np.asarray(x, dtype=np.float32),
-                         clip_eps=0.1,
-                         clip_eps_vf=None,
-                         update_interval=1024,
-                         minibatch_size=256,
-                         epochs=4,
-                         standardize_advantages=True,
-                         entropy_coef=0.001,
-                         max_grad_norm=0.5)
+        self.agent = PPO(
+            self.model,
+            self.optimizer,
+            gpu=self.device.index,
+            phi=lambda x: np.asarray(x, dtype=np.float32),
+            clip_eps=0.1,
+            clip_eps_vf=None,
+            update_interval=1024,
+            minibatch_size=256,
+            epochs=4,
+            standardize_advantages=True,
+            entropy_coef=0.001,
+            max_grad_norm=0.5,
+        )
 
     def act(self, observation):
         return self.agent.act(observation)
@@ -77,7 +80,10 @@ class PFRLPPOAgent(Agent):
         self.agent.observe(observation, reward, done, False)
 
     def save(self, path):
-        torch.save({
-            'model_state_dict': self.model.state_dict(),
-            'optimizer_state_dict': self.optimizer.state_dict(),
-        }, path+'.pt')
+        torch.save(
+            {
+                "model_state_dict": self.model.state_dict(),
+                "optimizer_state_dict": self.optimizer.state_dict(),
+            },
+            path + ".pt",
+        )

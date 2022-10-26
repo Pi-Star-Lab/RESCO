@@ -6,8 +6,8 @@ from resco_benchmark.config.signal_config import signal_configs
 class MAXWAVE(SharedAgent):
     def __init__(self, config, obs_act, map_name, thread_number):
         super().__init__(config, obs_act, map_name, thread_number)
-        self.valid_acts = signal_configs[map_name]['valid_acts']
-        self.agent = WaveAgent(signal_configs[map_name]['phase_pairs'])
+        self.valid_acts = signal_configs[map_name]["valid_acts"]
+        self.agent = WaveAgent(signal_configs[map_name]["phase_pairs"])
 
 
 class WaveAgent(Agent):
@@ -19,9 +19,11 @@ class WaveAgent(Agent):
         acts = []
         for i, observation in enumerate(observations):
             if valid_acts is None:
-                all_press = []
-                for pair in self.phase_pairs:
-                    all_press.append(observation[pair[0]] + observation[pair[1]])
+                all_press = [
+                    observation[pair[0]] + observation[pair[1]]
+                    for pair in self.phase_pairs
+                ]
+
                 acts.append(np.argmax(all_press))
             else:
                 max_press, max_index = None, None

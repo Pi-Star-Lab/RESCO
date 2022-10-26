@@ -4,7 +4,7 @@ from resco_benchmark.config.mdp_config import mdp_configs
 
 
 def drq(signals):
-    observations = dict()
+    observations = {}
     for signal_id in signals:
         signal = signals[signal_id]
         obs = []
@@ -16,14 +16,16 @@ def drq(signals):
             else:
                 lane_obs.append(0)
 
-            lane_obs.append(signal.full_observation[lane]['approach'])
-            lane_obs.append(signal.full_observation[lane]['total_wait'])
-            lane_obs.append(signal.full_observation[lane]['queue'])
+            lane_obs.extend(
+                (
+                    signal.full_observation[lane]["approach"],
+                    signal.full_observation[lane]["total_wait"],
+                    signal.full_observation[lane]["queue"],
+                )
+            )
 
-            total_speed = 0
-            vehicles = signal.full_observation[lane]['vehicles']
-            for vehicle in vehicles:
-                total_speed += vehicle['speed']
+            vehicles = signal.full_observation[lane]["vehicles"]
+            total_speed = sum(vehicle["speed"] for vehicle in vehicles)
             lane_obs.append(total_speed)
 
             obs.append(lane_obs)
@@ -32,7 +34,7 @@ def drq(signals):
 
 
 def drq_norm(signals):
-    observations = dict()
+    observations = {}
     for signal_id in signals:
         signal = signals[signal_id]
         obs = []
@@ -44,14 +46,16 @@ def drq_norm(signals):
             else:
                 lane_obs.append(0)
 
-            lane_obs.append(signal.full_observation[lane]['approach'] / 28)
-            lane_obs.append(signal.full_observation[lane]['total_wait'] / 28)
-            lane_obs.append(signal.full_observation[lane]['queue'] / 28)
+            lane_obs.extend(
+                (
+                    signal.full_observation[lane]["approach"] / 28,
+                    signal.full_observation[lane]["total_wait"] / 28,
+                    signal.full_observation[lane]["queue"] / 28,
+                )
+            )
 
-            total_speed = 0
-            vehicles = signal.full_observation[lane]['vehicles']
-            for vehicle in vehicles:
-                total_speed += (vehicle['speed'] / 20 / 28)
+            vehicles = signal.full_observation[lane]["vehicles"]
+            total_speed = sum((vehicle["speed"] / 20 / 28) for vehicle in vehicles)
             lane_obs.append(total_speed)
 
             obs.append(lane_obs)
@@ -60,28 +64,31 @@ def drq_norm(signals):
 
 
 def mplight(signals):
-    observations = dict()
+    observations = {}
     for signal_id in signals:
         signal = signals[signal_id]
         obs = [signal.phase]
         for direction in signal.lane_sets:
             # Add inbound
-            queue_length = 0
-            for lane in signal.lane_sets[direction]:
-                queue_length += signal.full_observation[lane]['queue']
+            queue_length = sum(
+                signal.full_observation[lane]["queue"]
+                for lane in signal.lane_sets[direction]
+            )
 
             # Subtract downstream
             for lane in signal.lane_sets_outbound[direction]:
                 dwn_signal = signal.out_lane_to_signalid[lane]
                 if dwn_signal in signal.signals:
-                    queue_length -= signal.signals[dwn_signal].full_observation[lane]['queue']
+                    queue_length -= signal.signals[dwn_signal].full_observation[lane][
+                        "queue"
+                    ]
             obs.append(queue_length)
         observations[signal_id] = np.asarray(obs)
     return observations
 
 
 def mplight_full(signals):
-    observations = dict()
+    observations = {}
     for signal_id in signals:
         signal = signals[signal_id]
         obs = [signal.phase]
@@ -92,82 +99,86 @@ def mplight_full(signals):
             total_speed = 0
             tot_approach = 0
             for lane in signal.lane_sets[direction]:
-                queue_length += signal.full_observation[lane]['queue']
-                total_wait += (signal.full_observation[lane]['total_wait'] / 28)
+                queue_length += signal.full_observation[lane]["queue"]
+                total_wait += signal.full_observation[lane]["total_wait"] / 28
                 total_speed = 0
-                vehicles = signal.full_observation[lane]['vehicles']
+                vehicles = signal.full_observation[lane]["vehicles"]
                 for vehicle in vehicles:
-                    total_speed += vehicle['speed']
-                tot_approach += (signal.full_observation[lane]['approach'] / 28)
+                    total_speed += vehicle["speed"]
+                tot_approach += signal.full_observation[lane]["approach"] / 28
 
             # Subtract downstream
             for lane in signal.lane_sets_outbound[direction]:
                 dwn_signal = signal.out_lane_to_signalid[lane]
                 if dwn_signal in signal.signals:
-                    queue_length -= signal.signals[dwn_signal].full_observation[lane]['queue']
-            obs.append(queue_length)
-            obs.append(total_wait)
-            obs.append(total_speed)
-            obs.append(tot_approach)
+                    queue_length -= signal.signals[dwn_signal].full_observation[lane][
+                        "queue"
+                    ]
+            obs.extend((queue_length, total_wait, total_speed, tot_approach))
         observations[signal_id] = np.asarray(obs)
     return observations
 
 
 def wave(signals):
-    observations = dict()
+    observations = {}
     for signal_id in signals:
         signal = signals[signal_id]
         state = []
         for direction in signal.lane_sets:
-            wave_sum = 0
-            for lane in signal.lane_sets[direction]:
-                wave_sum += signal.full_observation[lane]['queue'] + signal.full_observation[lane]['approach']
+            wave_sum = sum(
+                signal.full_observation[lane]["queue"]
+                + signal.full_observation[lane]["approach"]
+                for lane in signal.lane_sets[direction]
+            )
+
             state.append(wave_sum)
         observations[signal_id] = np.asarray(state)
     return observations
 
 
 def ma2c(signals):
-    ma2c_config = mdp_configs['MA2C']
+    ma2c_config = mdp_configs["MA2C"]
 
-    signal_wave = dict()
+    signal_wave = {}
     for signal_id in signals:
         signal = signals[signal_id]
         waves = []
         for lane in signal.lanes:
-            wave = signal.full_observation[lane]['queue'] + signal.full_observation[lane]['approach']
+            wave = (
+                signal.full_observation[lane]["queue"]
+                + signal.full_observation[lane]["approach"]
+            )
             waves.append(wave)
-        signal_wave[signal_id] = np.clip(np.asarray(waves) / ma2c_config['norm_wave'], 0, ma2c_config['clip_wave'])
+        signal_wave[signal_id] = np.clip(
+            np.asarray(waves) / ma2c_config["norm_wave"], 0, ma2c_config["clip_wave"]
+        )
 
-    observations = dict()
+    observations = {}
     for signal_id in signals:
         signal = signals[signal_id]
         waves = [signal_wave[signal_id]]
         for key in signal.downstream:
             neighbor = signal.downstream[key]
             if neighbor is not None:
-                waves.append(ma2c_config['coop_gamma'] * signal_wave[neighbor])
+                waves.append(ma2c_config["coop_gamma"] * signal_wave[neighbor])
         waves = np.concatenate(waves)
 
-        waits = []
-        for lane in signal.lanes:
-            max_wait = signal.full_observation[lane]['max_wait']
-            waits.append(max_wait)
-        waits = np.clip(np.asarray(waits) / ma2c_config['norm_wait'], 0, ma2c_config['clip_wait'])
+        waits = [signal.full_observation[lane]["max_wait"] for lane in signal.lanes]
+        waits = np.clip(
+            np.asarray(waits) / ma2c_config["norm_wait"], 0, ma2c_config["clip_wait"]
+        )
 
         observations[signal_id] = np.concatenate([waves, waits])
     return observations
 
 
 def fma2c(signals):
-    fma2c_config = mdp_configs['FMA2C']
-    management = fma2c_config['management']
-    supervisors = fma2c_config['supervisors']   # reverse of management
-    management_neighbors = fma2c_config['management_neighbors']
+    fma2c_config = mdp_configs["FMA2C"]
+    management = fma2c_config["management"]
+    supervisors = fma2c_config["supervisors"]  # reverse of management
+    management_neighbors = fma2c_config["management_neighbors"]
 
-    region_fringes = dict()
-    for manager in management:
-        region_fringes[manager] = []
+    region_fringes = {manager: [] for manager in management}
     for signal_id in signals:
         signal = signals[signal_id]
         for key in signal.downstream:
@@ -178,51 +189,60 @@ def fma2c(signals):
                     mgr = supervisors[signal_id]
                     region_fringes[mgr] += inbounds
 
-    lane_wave = dict()
+    lane_wave = {}
     for signal_id in signals:
         signal = signals[signal_id]
         for lane in signal.lanes:
-            lane_wave[lane] = signal.full_observation[lane]['queue'] + signal.full_observation[lane]['approach']
+            lane_wave[lane] = (
+                signal.full_observation[lane]["queue"]
+                + signal.full_observation[lane]["approach"]
+            )
 
-    manager_obs = dict()
-    for manager in region_fringes:
-        lanes = region_fringes[manager]
-        waves = []
-        for lane in lanes:
-            waves.append(lane_wave[lane])
-        manager_obs[manager] = np.clip(np.asarray(waves) / fma2c_config['norm_wave'], 0, fma2c_config['clip_wave'])
+    manager_obs = {}
+    for manager, lanes in region_fringes.items():
+        waves = [lane_wave[lane] for lane in lanes]
+        manager_obs[manager] = np.clip(
+            np.asarray(waves) / fma2c_config["norm_wave"], 0, fma2c_config["clip_wave"]
+        )
 
-    management_neighborhood = dict()
+    management_neighborhood = {}
     for manager in manager_obs:
         neighborhood = [manager_obs[manager]]
-        for neighbor in management_neighbors[manager]:
-            neighborhood.append(fma2c_config['alpha'] * manager_obs[neighbor])
+        neighborhood.extend(
+            fma2c_config["alpha"] * manager_obs[neighbor]
+            for neighbor in management_neighbors[manager]
+        )
+
         management_neighborhood[manager] = np.concatenate(neighborhood)
 
-    signal_wave = dict()
+    signal_wave = {}
     for signal_id in signals:
         signal = signals[signal_id]
         waves = []
         for lane in signal.lanes:
-            wave = signal.full_observation[lane]['queue'] + signal.full_observation[lane]['approach']
+            wave = (
+                signal.full_observation[lane]["queue"]
+                + signal.full_observation[lane]["approach"]
+            )
             waves.append(wave)
-        signal_wave[signal_id] = np.clip(np.asarray(waves) / fma2c_config['norm_wave'], 0, fma2c_config['clip_wave'])
+        signal_wave[signal_id] = np.clip(
+            np.asarray(waves) / fma2c_config["norm_wave"], 0, fma2c_config["clip_wave"]
+        )
 
-    observations = dict()
+    observations = {}
     for signal_id in signals:
         signal = signals[signal_id]
         waves = [signal_wave[signal_id]]
         for key in signal.downstream:
             neighbor = signal.downstream[key]
             if neighbor is not None and supervisors[neighbor] == supervisors[signal_id]:
-                waves.append(fma2c_config['alpha'] * signal_wave[neighbor])
+                waves.append(fma2c_config["alpha"] * signal_wave[neighbor])
         waves = np.concatenate(waves)
 
-        waits = []
-        for lane in signal.lanes:
-            max_wait = signal.full_observation[lane]['max_wait']
-            waits.append(max_wait)
-        waits = np.clip(np.asarray(waits) / fma2c_config['norm_wait'], 0, fma2c_config['clip_wait'])
+        waits = [signal.full_observation[lane]["max_wait"] for lane in signal.lanes]
+        waits = np.clip(
+            np.asarray(waits) / fma2c_config["norm_wait"], 0, fma2c_config["clip_wait"]
+        )
 
         observations[signal_id] = np.concatenate([waves, waits])
     observations.update(management_neighborhood)
@@ -230,14 +250,12 @@ def fma2c(signals):
 
 
 def fma2c_full(signals):
-    fma2c_config = mdp_configs['FMA2CFull']
-    management = fma2c_config['management']
-    supervisors = fma2c_config['supervisors']   # reverse of management
-    management_neighbors = fma2c_config['management_neighbors']
+    fma2c_config = mdp_configs["FMA2CFull"]
+    management = fma2c_config["management"]
+    supervisors = fma2c_config["supervisors"]  # reverse of management
+    management_neighbors = fma2c_config["management_neighbors"]
 
-    region_fringes = dict()
-    for manager in management:
-        region_fringes[manager] = []
+    region_fringes = {manager: [] for manager in management}
     for signal_id in signals:
         signal = signals[signal_id]
         for key in signal.downstream:
@@ -248,58 +266,63 @@ def fma2c_full(signals):
                     mgr = supervisors[signal_id]
                     region_fringes[mgr] += inbounds
 
-    lane_wave = dict()
+    lane_wave = {}
     for signal_id in signals:
         signal = signals[signal_id]
         for lane in signal.lanes:
-            lane_wave[lane] = signal.full_observation[lane]['queue'] + signal.full_observation[lane]['approach']
+            lane_wave[lane] = (
+                signal.full_observation[lane]["queue"]
+                + signal.full_observation[lane]["approach"]
+            )
 
-    manager_obs = dict()
-    for manager in region_fringes:
-        lanes = region_fringes[manager]
-        waves = []
-        for lane in lanes:
-            waves.append(lane_wave[lane])
-        manager_obs[manager] = np.clip(np.asarray(waves) / fma2c_config['norm_wave'], 0, fma2c_config['clip_wave'])
+    manager_obs = {}
+    for manager, lanes in region_fringes.items():
+        waves = [lane_wave[lane] for lane in lanes]
+        manager_obs[manager] = np.clip(
+            np.asarray(waves) / fma2c_config["norm_wave"], 0, fma2c_config["clip_wave"]
+        )
 
-    management_neighborhood = dict()
+    management_neighborhood = {}
     for manager in manager_obs:
         neighborhood = [manager_obs[manager]]
-        for neighbor in management_neighbors[manager]:
-            neighborhood.append(fma2c_config['alpha'] * manager_obs[neighbor])
+        neighborhood.extend(
+            fma2c_config["alpha"] * manager_obs[neighbor]
+            for neighbor in management_neighbors[manager]
+        )
+
         management_neighborhood[manager] = np.concatenate(neighborhood)
 
-    signal_wave = dict()
+    signal_wave = {}
     for signal_id in signals:
         signal = signals[signal_id]
         waves = []
         for lane in signal.lanes:
-            wave = signal.full_observation[lane]['queue'] + signal.full_observation[lane]['approach']
-            waves.append(wave)
-
-            waves.append(signal.full_observation[lane]['total_wait'] / 28)
-            total_speed = 0
-            vehicles = signal.full_observation[lane]['vehicles']
-            for vehicle in vehicles:
-                total_speed += (vehicle['speed'] / 20 / 28)
+            wave = (
+                signal.full_observation[lane]["queue"]
+                + signal.full_observation[lane]["approach"]
+            )
+            waves.extend((wave, signal.full_observation[lane]["total_wait"] / 28))
+            vehicles = signal.full_observation[lane]["vehicles"]
+            total_speed = sum((vehicle["speed"] / 20 / 28) for vehicle in vehicles)
             waves.append(total_speed)
-        signal_wave[signal_id] = np.clip(np.asarray(waves) / fma2c_config['norm_wave'], 0, fma2c_config['clip_wave'])
+        signal_wave[signal_id] = np.clip(
+            np.asarray(waves) / fma2c_config["norm_wave"], 0, fma2c_config["clip_wave"]
+        )
 
-    observations = dict()
+    observations = {}
     for signal_id in signals:
         signal = signals[signal_id]
         waves = [signal_wave[signal_id]]
         for key in signal.downstream:
             neighbor = signal.downstream[key]
             if neighbor is not None and supervisors[neighbor] == supervisors[signal_id]:
-                waves.append(fma2c_config['alpha'] * signal_wave[neighbor])
+                waves.append(fma2c_config["alpha"] * signal_wave[neighbor])
         waves = np.concatenate(waves)
 
-        waits = []
-        for lane in signal.lanes:
-            max_wait = signal.full_observation[lane]['max_wait']
-            waits.append(max_wait)
-        waits = np.clip(np.asarray(waits) / fma2c_config['norm_wait'], 0, fma2c_config['clip_wait'])
+        waits = [signal.full_observation[lane]["max_wait"] for lane in signal.lanes]
+        waits = np.clip(
+            np.asarray(waits) / fma2c_config["norm_wait"], 0, fma2c_config["clip_wait"]
+        )
 
         observations[signal_id] = np.concatenate([waves, waits])
     observations.update(management_neighborhood)

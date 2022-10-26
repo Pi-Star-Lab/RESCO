@@ -16,7 +16,7 @@ class STOCHASTICAgent(Agent):
         self.num_actions = num_actions
 
     def act(self, observation):
-        return random.randint(0, self.num_actions-1)
+        return random.randint(0, self.num_actions - 1)
 
     def observe(self, observation, reward, done, info):
         pass
