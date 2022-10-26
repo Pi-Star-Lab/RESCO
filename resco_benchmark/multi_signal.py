@@ -73,8 +73,10 @@ class MultiSignal(gym.Env):
             self.sumo = traci.getConnection(self.connection_name)
         self.signal_ids = self.sumo.trafficlight.getIDList()
         print("lights", len(self.signal_ids), self.signal_ids)
+
+        # this should work on all SUMO versions
         valid_phases = {
-            lightID: list(self.sumo.trafficlight.getAllProgramLogics(lightID)[0].phases)
+            lightID: list(self.sumo.trafficlight.getAllProgramLogics(lightID)[0].getPhases())
             for lightID in self.signal_ids
         }
 
