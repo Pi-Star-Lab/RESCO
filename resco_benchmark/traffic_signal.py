@@ -224,8 +224,8 @@ class Signal:
             full_observation['arrivals'] = full_observation['num_vehicles']
             full_observation['departures'] = set()
         else:
-            full_observation['arrivals'] = self.last_step_vehicles.difference(all_vehicles)
-            departs = all_vehicles.difference(self.last_step_vehicles)
+            full_observation['arrivals'] = all_vehicles.difference(self.last_step_vehicles)
+            departs = self.last_step_vehicles.difference(all_vehicles)
             full_observation['departures'] = departs
             # Clear departures from waiting times
             for vehicle in departs:
