@@ -30,6 +30,10 @@ class IPPO(IndependentAgent):
             obs_space = obs_act[key][0]
             act_space = obs_act[key][1]
             self.agents[key] = PFRLPPOAgent(config, obs_space, act_space)
+            if self.config['load']:
+                print('LOADING SAVED MODEL FOR EVALUATION')
+                self.agents[key].load(self.config['log_dir']+'agent_'+key+'.pt')
+                self.agents[key].agent.training = False
 
 
 class PFRLPPOAgent(Agent):
@@ -81,3 +85,7 @@ class PFRLPPOAgent(Agent):
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
         }, path+'.pt')
+
+    def load(self, path):
+        self.model.load_state_dict(torch.load(path)['model_state_dict'])
+        self.optimizer.load_state_dict(torch.load(path)['optimizer_state_dict'])

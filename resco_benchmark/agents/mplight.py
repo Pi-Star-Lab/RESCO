@@ -18,7 +18,7 @@ class MPLight(SharedAgent):
 
         comp_mask = []
         for i in range(len(phase_pairs)):
-            zeros = np.zeros(len(phase_pairs) - 1, dtype=np.int)
+            zeros = np.zeros(len(phase_pairs) - 1, dtype=int)
             cnt = 0
             for j in range(len(phase_pairs)):
                 if i == j: continue
@@ -34,6 +34,10 @@ class MPLight(SharedAgent):
         self.valid_acts = signal_configs[map_name]['valid_acts']
         model = FRAP(config, num_actions, phase_pairs, comp_mask, self.device)
         self.agent = DQNAgent(config, num_actions, model, num_agents=config['num_lights'])
+        if self.config['load']:
+            print('LOADING SAVED MODEL FOR EVALUATION')
+            self.agent.load(self.config['log_dir'] + 'agent.pt')
+            self.agent.agent.training = False
 
 
 class FRAP(nn.Module):

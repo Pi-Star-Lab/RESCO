@@ -32,7 +32,7 @@ class IndependentAgent(Agent):
         for agent_id in observation.keys():
             self.agents[agent_id].observe(observation[agent_id], reward[agent_id], done, info)
             if done:
-                if info['eps'] % 100 == 0:
+                if info['eps'] % self.config['save_freq'] == 0:
                     self.agents[agent_id].save(self.config['log_dir']+'agent_'+agent_id)
 
 
@@ -75,5 +75,5 @@ class SharedAgent(Agent):
         batch_reset = [False]*len(batch_obs)
         self.agent.observe(batch_obs, batch_rew, batch_done, batch_reset)
         if done:
-            if info['eps'] % 100 == 0:
+            if info['eps'] % self.config['save_freq'] == 0:
                 self.agent.save(self.config['log_dir']+'agent')
