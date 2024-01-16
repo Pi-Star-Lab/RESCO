@@ -27,6 +27,8 @@ def main():
     ap.add_argument("--gui", type=bool, default=False)
     ap.add_argument("--libsumo", type=bool, default=False)
     ap.add_argument("--tr", type=int, default=0)  # Can't multi-thread with libsumo, provide a trial number
+    ap.add_argument("--save_freq", type=int, default=100)
+    ap.add_argument("--load", type=bool, default=False)
     args = ap.parse_args()
 
     if args.libsumo and 'LIBSUMO_AS_TRACI' not in os.environ:
@@ -51,6 +53,8 @@ def run_trial(args, trial):
         mdp_configs[args.agent] = mdp_config
 
     agt_config = agent_configs[args.agent]
+    agt_config['save_freq'] = args.save_freq
+    agt_config['load'] = args.load
     agt_map_config = agt_config.get(args.map)
     if agt_map_config is not None:
         agt_config = agt_map_config

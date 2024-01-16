@@ -72,12 +72,12 @@ class MultiSignal(gym.Env):
         observations = self.state_fn(self.signals)
         self.ts_order = list()
         for ts in observations:
-            if ts == 'top_mgr' or ts == 'bot_mgr': continue     # Not a traffic signal
             o_shape = observations[ts].shape
             self.obs_shape[ts] = o_shape
             o_shape = gym.spaces.Box(low=-np.inf, high=np.inf, shape=o_shape)
             self.ts_order.append(ts)
             self.observation_space.append(o_shape)
+            if ts == 'top_mgr' or ts == 'bot_mgr': continue  # Not a traffic signal
             self.action_space.append(gym.spaces.Discrete(len(self.phases[ts])))
 
         self.n_agents = self.ts_starter
