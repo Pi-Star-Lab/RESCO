@@ -8,7 +8,7 @@
             controlled_signals: null    # List of signals to control, null for all
             uncontrolled_policy: MAXPRESSURE  # Policy for non-controlled signals, one of [FIXED, MAXPRESSURE, MAXWAVE]
 
-            action_set: Phase   # [Phase, FixedCyclePlan, FixedCycle]
+            action_set: FixedCyclePlan   # [Phase, FixedCyclePlan, FixedCycle]
             episodes: 100
             converged: null   # Number of episodes to wait for convergence, null to disable, at least 'episodes' to run
             log_dir: results

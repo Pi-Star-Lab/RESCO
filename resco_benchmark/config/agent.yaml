@@ -160,6 +160,21 @@ CoSLight:
   state_key: ['current_phase', 'car_num', 'queue_length', 'occupancy', 'flow', 'stop_car_num', 'pressure']
   demand_shape: 7
 
+ICycle:
+  module: action_value.cycle_dqn
+  state: drq
+  reward: wait
+  learning_rate: 1e-3
+  batch_size: 32
+  discount: 0.99
+  epsilon_begin: 1.0
+  epsilon_end: 0.0
+  target_update_steps: 500
+  buffer_size: 20000
+  buffer_type: uniform
+  epsilon_decay_period: 0.8 # 80% of the total number of episodes
+  number_of_layers: 3
+  number_of_units: 64
 
 IDQN:
   module: action_value.pfrl_dqn

@@ -104,14 +104,14 @@ class MultiSignal(gym.Env):
                 print("Built state:", signal_id, observations[signal_id].shape)
 
         # Override action space if not standard 'Phase' type
-        self.action_mask = None
+        self.action_set = None
         if cfg.action_set is not None and cfg.action_set != "Phase":
-            self.action_mask = getattr(action_sets, cfg.action_set)(
+            self.action_set = getattr(action_sets, cfg.action_set)(
                 self.obs_act, self.signals
             )
             if cfg.algorithm != "FIXED":
                 for ts in self.obs_act:
-                    self.obs_act[ts] = (self.obs_act[ts][0], self.action_mask.num_acts)
+                    self.obs_act[ts] = (self.obs_act[ts][0], self.action_set.num_acts)
 
         # Calculate decay period from % input for convenience
         steps_per_episode = int((cfg.end_time - cfg.start_time) / cfg.step_length)
@@ -425,8 +425,8 @@ class MultiSignal(gym.Env):
         return act
 
     def step(self, act):
-        if self.action_mask is not None:
-            act = self.action_mask.act(act)
+        if self.action_set is not None:
+            act = self.action_set.act(act)
         act = self.uncontrolled_acts(act)
 
         cutoff = traci.simulation.getTime()

@@ -81,6 +81,10 @@ class FixedAgent(Agent):
 
         return self.phase_order[self.active_phase]
 
+    @property
+    def phase_ending(self):
+        return self.active_phase_len >= np.abs(self.plan[self.active_phase])
+
     def __getitem__(self, act):
         return self.plan[self.phase_order[act]]
 
