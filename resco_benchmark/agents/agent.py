@@ -127,3 +127,9 @@ class SharedAgent(Agent):
 
     def load(self):
         self.agent.load()
+
+    def training(self):
+        self.agent.training()
+
+    def testing(self):
+        self.agent.testing()

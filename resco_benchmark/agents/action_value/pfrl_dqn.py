@@ -204,14 +204,23 @@ class DQNAgent(Agent):
             )
 
     def act(self, observation, pair_to_act_map=None, reverse_valid=None):
-        if isinstance(self.agent, SharedDQN):
-            act = self.agent.act(
-                observation,
-                pair_to_act_map=pair_to_act_map,
-                reverse_valid=reverse_valid,
-            )
+        def select_action():
+            if isinstance(self.agent, SharedDQN):
+                return self.agent.act(
+                    observation,
+                    pair_to_act_map=pair_to_act_map,
+                    reverse_valid=reverse_valid,
+                )
+            return self.agent.act(observation)
+
+        if self._training:
+            act = select_action()
         else:
-            act = self.agent.act(observation)
+            # Disabling updates alone does not disable PFRL's epsilon explorer.
+            # Evaluation mode makes testing greedy, including after loading a
+            # checkpoint whose interaction-step counter is not persisted.
+            with self.agent.eval_mode():
+                act = select_action()
 
         return act
 
@@ -250,7 +259,15 @@ class DQNAgent(Agent):
             os.path.join(cfg.load_model, "agt_" + compute_safe_id(self.agent_id))
         )
         logger.debug("Loading agent {0} from {1}".format(self.agent_id, agt_path))
-        checkpoint = torch.load(agt_path + ".pt", map_location=self.device)
+        try:
+            # RESCO checkpoints contain optimizer/config objects as well as tensor
+            # weights. PyTorch 2.6 changed this default to weights_only=True.
+            checkpoint = torch.load(
+                agt_path + ".pt", map_location=self.device, weights_only=False
+            )
+        except TypeError:
+            # ``weights_only`` is unavailable in older supported PyTorch releases.
+            checkpoint = torch.load(agt_path + ".pt", map_location=self.device)
         self.model.load_state_dict(checkpoint["model_state_dict"])
 
         if cfg.load_replay:

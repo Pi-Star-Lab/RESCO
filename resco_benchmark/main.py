@@ -2,6 +2,10 @@ import os
 import time
 import logging
 import importlib
+import random
+
+import numpy as np
+import torch
 
 from resco_benchmark.config.config import config as cfg
 from resco_benchmark.utils.logs import parse_logs
@@ -46,6 +50,10 @@ def main():
 
 def run_trial():
     print(f"cfg.run_name: {cfg.run_name}")
+    if cfg.seed is not None:
+        random.seed(cfg.seed)
+        np.random.seed(cfg.seed)
+        torch.manual_seed(cfg.seed)
     if cfg.route is not None:
         cfg.route = str(os.path.join(os.path.dirname(__file__), cfg.route))
 
@@ -71,18 +79,16 @@ def run_trial():
     if cfg.load_model is not None:
         try:
             agent.load()
-        except Exception as e:
-            logger.error("Could not load model, are the RESCO parameters the same?", e)
-            raise e
+        except Exception:
+            logger.exception("Could not load model; are the RESCO parameters the same?")
+            raise
 
     if cfg.curriculum is None:
         adj_len = 1
     else:
         adj_len = len(cfg.curriculum)
 
-    minimum_length = (
-        cfg.episodes * adj_len
-    )  # TODO test if cfg.testing is ok for curriculum
+    minimum_length = cfg.episodes * adj_len if cfg.training else 0
 
     terminated = False
     for __ in range(minimum_length):
@@ -108,6 +114,9 @@ def run_trial():
         if "init_ender" in cfg and cfg.init_ender:
             break
 
+    # Testing is a distinct phase.  Several agents and environment reset hooks use
+    # cfg.training to decide whether to learn or advance a training curriculum.
+    cfg.training = False
     agent.testing()
     terminated = False
     for __ in range(cfg.testing):

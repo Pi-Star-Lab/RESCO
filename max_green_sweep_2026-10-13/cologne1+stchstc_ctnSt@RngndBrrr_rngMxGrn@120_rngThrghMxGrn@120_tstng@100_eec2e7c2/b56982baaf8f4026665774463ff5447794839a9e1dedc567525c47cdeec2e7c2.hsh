@@ -1,0 +1,301 @@
+b56982baaf8f4026665774463ff5447794839a9e1dedc567525c47cdeec2e7c2: cologne1+stchstc_ctnSt@RngndBrrr_rngMxGrn@120_rngThrghMxGrn@120_tstng@100_eec2e7c2
+@cologne1 @STOCHASTIC action_set:RingAndBarrier ring_max_green:120 ring_through_max_green:120 episodes:1400 testing:100 log_dir:max_green_sweep_2026-10-13 save_console_log:True
+{
+    "colors_map": {
+        "Max Pressure": "C3",
+        "IDQN": "C0",
+        "Fixed Time": "C1",
+        "MPLight": "C2",
+        "Advanced-MPLight": "C4",
+        "Parameter Reset": "C5"
+    },
+    "names_map": {
+        "timeLoss": "Average Delay",
+        "duration": "Average Travel Time",
+        "waitingTime": "Average Waiting Time",
+        "rewards": "Reward",
+        "max_queues": "Max Queue Length",
+        "queue_lengths": "Average Queue Length",
+        "vehicles": "Demand",
+        "phase_length": "Phase Length",
+        "yaxis_timeLoss": "Delay (s)",
+        "yaxis_duration": "Travel Time (s)",
+        "yaxis_waitingTime": "Waiting Time (s)",
+        "yaxis_rewards": "Reward total",
+        "yaxis_max_queues": "Queue length",
+        "yaxis_queue_lengths": "Queue length",
+        "yaxis_vehicles": "Vehicles (vpm)",
+        "cologne1": "Cologne Single",
+        "cologne3": "Cologne Corridor",
+        "cologne8": "Cologne Region",
+        "ingolstadt1": "Ingolstadt Single",
+        "ingolstadt7": "Ingolstadt Corridor",
+        "ingolstadt21": "Ingolstadt Region",
+        "saltlake2_stateXuniversity": "Univ & State - 2023 Q1",
+        "saltlake2_stateXuniversity#signals@['A3']": "Univ & State - 2023 Q1 - West Signal",
+        "saltlake2_stateXuniversity#signals@['B3']": "Univ & State - 2023 Q1 - East Signal",
+        "saltlake2_400sX200w": "400S & 200W - 2023 Q1",
+        "saltlake2_400sX200w#signals@['A3']": "400S & 200W - 2023 Q1 - West Signal",
+        "saltlake2_400sX200w#signals@['B3']": "400S & 200W - 2023 Q1 - East Signal",
+        "FIXED": "Fixed time",
+        "MAXWAVE": "Max wave",
+        "MAXPRESSURE": "Max pressure",
+        "RLCD": "RL-CD",
+        "AdvancedMPLight": "Advanced-MPLight",
+        "IMultiDQN": "DARTS",
+        "init_time": "H",
+        "sample_time": "W",
+        "model_buffer_size": "n",
+        "deviations": "\u03c3",
+        "fixed_buffer": "Fixed",
+        "parameter_reset_freq": "Reset",
+        "buffer_size": "Buffer",
+        "action_set": "Actions",
+        "fasttrac": "Fast TRAC",
+        "crelu": "CReLU",
+        "global_buffers": "Global",
+        "blank_params": {
+            "IMultiDQN": [
+                "criteria",
+                "expert"
+            ],
+            "ISAC": [
+                "cl_method"
+            ]
+        },
+        "relevant_params": {
+            "IDQN": [
+                "fasttrac",
+                "crelu",
+                "parameter_reset_freq",
+                "buffer_size"
+            ],
+            "RLCD": [
+                "action_set"
+            ],
+            "ISAC": [
+                "cl_method"
+            ],
+            "IMultiDQN": [
+                "criteria",
+                [
+                    "criteria",
+                    "!std&!kstest&!oracle_vehicles",
+                    [
+                        "fallback"
+                    ]
+                ],
+                [
+                    "criteria",
+                    "std",
+                    [
+                        "global_buffers",
+                        "expert",
+                        "init_time",
+                        "sample_time",
+                        "deviations",
+                        "model_buffer_size",
+                        "fixed_buffer"
+                    ]
+                ],
+                [
+                    "criteria",
+                    "kstest",
+                    [
+                        "expert",
+                        "init_time",
+                        "sample_time",
+                        "p_value",
+                        "model_buffer_size",
+                        "fixed_buffer"
+                    ]
+                ]
+            ]
+        },
+        "text_values": {
+            "std": "Std Dev",
+            "kstest": "K-S Test"
+        }
+    },
+    "controlled_signals": null,
+    "uncontrolled_policy": "FIXED",
+    "action_set": "RingAndBarrier",
+    "episodes": 1400,
+    "converged": null,
+    "log_dir": "/home/ghebes/RESCO/max_green_sweep_2026-10-13",
+    "gui": false,
+    "libsumo": true,
+    "load_sim": null,
+    "save_model": true,
+    "save_frequency": 20,
+    "load_model": null,
+    "load_replay": true,
+    "training": true,
+    "testing": 100,
+    "flow": 1.0,
+    "curriculum": null,
+    "max_distance": 200,
+    "step_length": 5,
+    "yellow_length": 3,
+    "clearance_length": 2,
+    "ring_max_green": 120,
+    "ring_through_min_green": null,
+    "ring_through_max_green": 120,
+    "step_ratio": 1,
+    "run_hour": null,
+    "clean_nightly": null,
+    "log_level": "INFO",
+    "save_console_log": true,
+    "delete_episode_logs": true,
+    "seed": 90210,
+    "gpu": 0,
+    "flat_state": true,
+    "script_launcher": true,
+    "processors": 4,
+    "trials": 5,
+    "optuna_objective": null,
+    "optuna_trials": 1000,
+    "error_bars": true,
+    "smoothing": null,
+    "xml_metrics": [
+        "timeLoss",
+        "duration",
+        "waitingTime"
+    ],
+    "csv_metrics": [
+        "rewards",
+        "max_queues",
+        "queue_lengths",
+        "vehicles",
+        "phase_length"
+    ],
+    "directions": [
+        "S-W",
+        "S-S",
+        "S-E",
+        "W-N",
+        "W-W",
+        "W-S",
+        "N-E",
+        "N-N",
+        "N-W",
+        "E-S",
+        "E-E",
+        "E-N"
+    ],
+    "phase_pairs": [
+        [
+            "W-W",
+            "W-S"
+        ],
+        [
+            "E-E",
+            "E-N"
+        ],
+        [
+            "W-W",
+            "E-E"
+        ],
+        [
+            "W-S",
+            "E-N"
+        ],
+        [
+            "N-N",
+            "N-W"
+        ],
+        [
+            "S-S",
+            "S-E"
+        ],
+        [
+            "S-S",
+            "N-N"
+        ],
+        [
+            "S-E",
+            "N-W"
+        ]
+    ],
+    "pair_to_act_map": null,
+    "cluster_357187_359543": {
+        "lane_sets": {
+            "S-W": [
+                "27115123#3_0"
+            ],
+            "S-S": [
+                "27115123#3_1",
+                "27115123#3_0"
+            ],
+            "S-E": [
+                "27115123#3_1"
+            ],
+            "W-N": [
+                "-32038056#3_0"
+            ],
+            "W-W": [
+                "-32038056#3_0",
+                "-32038056#3_1"
+            ],
+            "W-S": [
+                "-32038056#3_1"
+            ],
+            "N-E": [
+                "23429231#1_0"
+            ],
+            "N-N": [
+                "23429231#1_0",
+                "23429231#1_1"
+            ],
+            "N-W": [
+                "23429231#1_1"
+            ],
+            "E-S": [
+                "28198821#3_0"
+            ],
+            "E-E": [
+                "28198821#3_1",
+                "28198821#3_0"
+            ],
+            "E-N": [
+                "28198821#3_1"
+            ]
+        },
+        "downstream": {
+            "N": null,
+            "E": null,
+            "S": null,
+            "W": null
+        },
+        "fixed_timings": [
+            2,
+            2,
+            8,
+            2,
+            2,
+            2,
+            8,
+            2
+        ],
+        "fixed_phase_order_idx": 0
+    },
+    "management": {
+        "top_mgr": [
+            "cluster_357187_359543"
+        ]
+    },
+    "management_neighbors": {
+        "top_mgr": []
+    },
+    "network": "cologne1.net.xml",
+    "route": "cologne1.rou.xml",
+    "start_time": 25200,
+    "end_time": 28800,
+    "module": "static.stochastic",
+    "state": "mplight",
+    "reward": "wait",
+    "benchmark_path": "/home/ghebes/RESCO",
+    "map": "cologne1",
+    "algorithm": "STOCHASTIC",
+    "uuid": "d4c3240a-8f75-44b5-bbd5-2a551efe278e"
+}

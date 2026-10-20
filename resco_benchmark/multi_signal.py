@@ -57,6 +57,9 @@ class MultiSignal(gym.Env):
         self.sumo = None  # Set by start_sumo
         self.best_reward = None
         self.best_episode = None
+        self._seed_mode = cfg.training
+        self._mode_episode = 0
+        self._sumo_seed = cfg.seed
         if "prob_test" in cfg:
             self.context = 0
 
@@ -262,8 +265,6 @@ class MultiSignal(gym.Env):
                 cfg.route,
                 "--step-length",
                 f"{cfg.step_ratio}",
-                "--random",
-                "True",
                 "--no-warnings",
                 "True",
                 "--no-step-log",
@@ -279,6 +280,9 @@ class MultiSignal(gym.Env):
                 "--eager-insert",  # Undeparted not written correctly without this, slows down simulation though
             ]
 
+            if cfg.seed is None:
+                self.sumo_cmd += ["--random", "True"]
+
             if "saltlake" not in cfg.map and cfg.run_hour is None:
                 self.sumo_cmd += [
                     "--begin",
@@ -291,6 +295,8 @@ class MultiSignal(gym.Env):
             "--tripinfo-output",
             cfg.run_path + "tripinfo_{0}.xml".format(self.cumulative_episode),
         ]
+        if self._sumo_seed is not None:
+            sumo_cmd += ["--seed", str(self._sumo_seed)]
 
         # Years long data requires a different start/end time between episodes
         if "saltlake" in cfg.map or cfg.run_hour is not None:
@@ -312,7 +318,14 @@ class MultiSignal(gym.Env):
     def reset(self, seed=None, options=None):
         self.sumo_close()
 
-        if cfg.curriculum is not None:
+        if cfg.seed is not None:
+            if cfg.training != self._seed_mode:
+                self._seed_mode = cfg.training
+                self._mode_episode = 0
+            self._sumo_seed = int(cfg.seed) + self._mode_episode
+            self._mode_episode += 1
+
+        if cfg.training and cfg.curriculum is not None:
             self.curriculum_next()
 
         info = {"out_of_data": False, "environment": self}
@@ -366,6 +379,9 @@ class MultiSignal(gym.Env):
             self.signals[ts] = Signal(self.sumo, ts)
             self.signals[ts].signals = self.signals
             self.signals[ts].observe()
+
+        if self.action_mask is not None and hasattr(self.action_mask, "reset"):
+            self.action_mask.reset()
 
         return self.state_fn(self.signals), info
 

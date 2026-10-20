@@ -99,3 +99,9 @@ class PFRLPPOAgent(Agent):
         )
         if not cfg.training:
             self.agent.training = False
+
+    def training(self):
+        self.agent.training = True
+
+    def testing(self):
+        self.agent.training = False

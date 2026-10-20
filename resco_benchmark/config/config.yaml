@@ -5,24 +5,24 @@
         - ./agent.yaml
     (profiles):
         (default):
-            controlled_signals: null    # List of signals to control, null for all
-            uncontrolled_policy: MAXPRESSURE  # Policy for non-controlled signals, one of [FIXED, MAXPRESSURE, MAXWAVE]
+            controlled_signals: null   # List of signals to control, null for all
+            uncontrolled_policy: FIXED  # Policy for non-controlled signals, one of [FIXED, MAXPRESSURE, MAXWAVE]
 
-            action_set: Phase   # [Phase, FixedCyclePlan, FixedCycle]
-            episodes: 100
+            action_set: RingAndBarrier   # Cologne1 FHWA-style ring-and-barrier actions
+            episodes: 1400
             converged: null   # Number of episodes to wait for convergence, null to disable, at least 'episodes' to run
-            log_dir: results
+            log_dir: new_results
             gui: False
             libsumo: True   # C bindings for SUMO, MAC and Windows may be unable to use
 
             load_sim: null      # UUID of saved sim in log_dir
-            save_model: False   # Whether to save models
+            save_model: True   # Whether to save models
             save_frequency: 20  # Episodes between model saves
             load_model: null    # UUID of model saved in log_dir
             load_replay: True   # If a replay exists, load it and continue training - only when load_model set
 
             training: True
-            testing: 0   # TODO test this, Number of episodes to run after training with exploration turned off
+            testing: 100   # Episodes to run after training with learning/exploration disabled
 
             flow: 1.0   # Scales original traffic demand, 1.0 = original
             curriculum: null    # TODO is this still implemented?
@@ -31,6 +31,9 @@
             step_length: 5
             yellow_length: 3
             clearance_length: 2 # all red after permissive left turn phases, use if SUMO gridlocks in high demand
+            ring_max_green: 120 # seconds; RingAndBarrier protected/split phases, null disables
+            ring_through_min_green: null # seconds; guarantees mainline capacity before crossing the barrier
+            ring_through_max_green: 120 # seconds; coordinated-through phase, null disables
             step_ratio: 1   # Number of SUMO steps per step (used for sub 1s microsim update scenarios, not used atm)
 
             run_hour: null  # One of [peak, null]  only applies to saltlake, null will run from start_date until episode limit
@@ -41,7 +44,7 @@
             save_console_log: True      # All console output will be saved to a log file in the log_dir, console will be blank
             delete_episode_logs: True
 
-            seed: null # Unused right now, TODO make fully reproducible runs with seeding
+            seed: 90210 # Unused right now, TODO make fully reproducible runs with seeding
             gpu: 0
             flat_state: True
 
